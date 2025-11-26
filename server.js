@@ -99,7 +99,7 @@ io.on("connection", (socket) => {
 // ========================
 // START SERVER (LOCAL + ONLINE)
 // ========================
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000;
 http.listen(PORT, () => {
     console.log("Realtime server running on port " + PORT);
 });
