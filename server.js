@@ -35,13 +35,12 @@ app.post("/push", (req, res) => {
     // 2) Gửi toàn bộ client
     io.emit(type, data);
 
-    // 3) Event dành cho dashboard admin
+    // 3) Dashboard admin
     io.emit("dashboard_update", { type, data });
 
-    // 4) Clear ghế tạm sau thanh toán
+    // 4) Clear ghế tạm khi đặt thành công
     if (type === "seat_booked_done") {
         const { showtime_id, seat_ids } = data;
-
         if (showtime_id && Array.isArray(seat_ids) && tempSeats[showtime_id]) {
             tempSeats[showtime_id] = tempSeats[showtime_id].filter(
                 id => !seat_ids.includes(id)
@@ -54,11 +53,14 @@ app.post("/push", (req, res) => {
 
 
 // ========================
-// Gửi thời gian thực (1 LẦN DUY NHẤT)
+// GỬI THỜI GIAN THỰC (1 GIÂY)
 // ========================
 setInterval(() => {
     io.emit("time_tick", {
-        now: new Date().toISOString()
+        now: new Date().toLocaleString("en-US", {
+            hour12: false,
+            timeZone: "Asia/Ho_Chi_Minh"
+        })
     });
 }, 1000);
 
@@ -69,27 +71,24 @@ setInterval(() => {
 io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
 
-    // Client join room suất chiếu
     socket.on("join_showtime", (showtime_id) => {
         if (!showtime_id) return;
         socket.join("showtime_" + showtime_id);
         console.log(`Socket ${socket.id} joined showtime_${showtime_id}`);
     });
 
-    // Khóa ghế
+    // Giữ ghế
     socket.on("select_seat", (data) => {
         const { showtime_id, seat_id } = data || {};
         if (!showtime_id || !seat_id) return;
 
         if (!tempSeats[showtime_id]) tempSeats[showtime_id] = [];
 
-        // Ghế đã bị giữ
         if (tempSeats[showtime_id].includes(seat_id)) {
             socket.emit("seat_rejected", seat_id);
             return;
         }
 
-        // Giữ ghế
         tempSeats[showtime_id].push(seat_id);
         io.to("showtime_" + showtime_id).emit("seat_locked", seat_id);
     });
