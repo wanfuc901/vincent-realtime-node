@@ -58,6 +58,14 @@ app.post("/push", (req, res) => {
 io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
 
+    // Gửi thời gian thực mỗi 1 giây cho toàn bộ client
+setInterval(() => {
+    io.emit("time_tick", {
+        now: new Date().toISOString()
+    });
+}, 1000);
+
+
     socket.on("join_showtime", (showtime_id) => {
         if (!showtime_id) return;
         socket.join("showtime_" + showtime_id);
