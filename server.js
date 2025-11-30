@@ -12,6 +12,13 @@ const io = require("socket.io")(http, {
 app.use(express.json());
 
 // ========================
+// WAKE-UP ENDPOINT
+// ========================
+app.get("/ping", (req, res) => {
+    res.status(200).json({ ok: true, status: "awake" });
+});
+
+// ========================
 // GHẾ TẠM GIỮ
 // ========================
 let tempSeats = {};
