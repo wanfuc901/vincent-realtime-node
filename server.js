@@ -11,12 +11,36 @@ const io = require("socket.io")(http, {
 
 app.use(express.json());
 
+
+// ========================
+// PING COUNTER (CRON-JOB LOG)
+// ========================
+let cronPingCount = 0;
+let lastPingTime = null;
+
+
 // ========================
 // WAKE-UP ENDPOINT
 // ========================
 app.get("/ping", (req, res) => {
-    res.status(200).json({ ok: true, status: "awake" });
+    cronPingCount++;
+    lastPingTime = new Date();
+
+    console.log(
+        `[PING] Cron-job ping #${cronPingCount} at ${lastPingTime.toLocaleString("en-US", {
+            hour12: false,
+            timeZone: "Asia/Ho_Chi_Minh"
+        })}`
+    );
+
+    res.status(200).json({
+        ok: true,
+        status: "awake",
+        pingCount: cronPingCount,
+        lastPing: lastPingTime.toISOString()
+    });
 });
+
 
 // ========================
 // GHẾ TẠM GIỮ
